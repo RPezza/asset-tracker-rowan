@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 1em 0;
+        }
+        .messages li.success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="{% static 'white.png' %}" alt="Logo">
+        <nav>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'asset_list' %}">Assets</a>
+            <a href="{% url 'booking_list' %}">Booking List</a>
+            <a href="{% url 'contact' %}">Contact</a>
+            <a href="{% url 'book_asset' %}">Book Asset</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Contact the Admins</h1>
+        <h2>For any issues or queries, please leave a message and an administrator will respond to assist you.</h2>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Send Message</button>
+        </form>
+    </main>
+
+    <footer>
+        &copy; 2025 Reach. All rights reserved.
+    </footer>
+
+    <script>
+        window.addEventListener('beforeunload', (event) => {
+            event.preventDefault();
+            event.returnValue = '';
+        });
+    </script>
+</body>
+</html>

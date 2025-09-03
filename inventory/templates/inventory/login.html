@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body class="login-page">
+  <div class="login-box">
+    <img src="{% static 'darklong.png' %}">
+    <h2>Welcome to Reach</h2>
+    <h3>The Asset Management Platform</h3>
+        {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <p>
+          <label for="username">Username:</label><br>
+          <input type="text" name="username" id="username" required>
+        </p>
+        <p>
+          <label for="password">Password:</label><br>
+          <input type="password" name="password" id="password" required>
+        </p>
+        <button type="submit">Login</button>
+      </form>
+      <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+    <div class="footer">
+      Forgot your password? Contact your admin.
+    </div>
+  </div>
+</body>
+</html>

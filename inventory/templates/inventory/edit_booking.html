@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Booking | Asset Tracker</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <img src="{% static 'white.png' %}">
+        <nav>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'asset_list' %}">Assets</a>
+            <a href="{% url 'booking_list' %}">Booking List</a>
+            <a href="{% url 'contact' %}">Contact</a>
+            <a href="{% url 'book_asset' %}">Book Asset</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Logout</button>
+              </form>
+              
+        
+        </nav>
+    </header>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <main>
+        <h1>Edit Booking</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="book-btn">Save Changes</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2025 Reach. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Asset Tracker{% endblock %}
+
+{% block extrastyle %}
+
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: 'Roboto', Arial, sans-serif;
+        background: linear-gradient(180deg, #192d38, #bedae5);
+        color: #ffffff;
+    }
+
+    #header {
+        background-color: transparent;
+        padding: 20px;
+        text-align: center;
+    }
+
+    #header h1 {
+        font-size: 40px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .module h2, .module caption, .inline-group h2 {
+        color: #ffffff;
+    }
+
+    .module {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .button, input[type="submit"], input[type="button"], .submit-row input {
+        background-color: #5a7681;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .button:hover, input[type="submit"]:hover, input[type="button"]:hover {
+        background-color: #3e5a63;
+    }
+
+    .breadcrumbs {
+        background: none;
+        color: white;
+    }
+
+    .breadcrumbs a {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1>Asset Tracker Admin</h1>
+{% endblock %}

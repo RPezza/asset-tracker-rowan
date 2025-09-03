@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Equipment</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <img src="{% static 'white.png' %}">
+        <nav>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'asset_list' %}">Assets</a>
+            <a href="{% url 'booking_list' %}">Booking List</a>
+            <a href="{% url 'contact' %}">Contact</a>
+            <a href="{% url 'book_asset' %}">Book Asset</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Logout</button>
+              </form>
+              
+        
+        </nav>
+    </header>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <main>
+        <h1>Book Available Equipment</h1>
+        <h2>Here you can book equipment for use. You will be unable to book equipment that has already been booked for selected dates.</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Book</button>
+        </form>
+    </main>
+
+    <footer>
+        &copy; 2025 Reach. All rights reserved
+    </footer>
+
+    <script>
+        window.addEventListener('beforeunload', (event) => {
+            event.preventDefault();
+            event.returnValue = '';
+        });
+    </script>
+    
+</body>
+</html>

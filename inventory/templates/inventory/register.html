@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register | Asset Tracker</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <img src="{% static 'white.png' %}" alt="Logo">
+        <nav>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'asset_list' %}">Assets</a>
+            <a href="{% url 'booking_list' %}">Booking List</a>
+            <a href="{% url 'contact' %}">Contact</a>
+            <a href="{% url 'book_asset' %}">Book Asset</a>
+        </nav>
+    </header>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <main>
+        <h1>Register</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Create Account</button>
+        </form>
+        <p>Already have an account? <a href="{% url 'login' %}" class="highlight-link">Login here</a></p>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Reach. All rights reserved</p>
+    </footer>
+</body>
+</html>
