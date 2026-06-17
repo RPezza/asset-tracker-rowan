@@ -5,37 +5,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login</title>
+  <link rel="icon" type="image/png" href="{% static 'Atkinsrealis_flavicon_(4) (2).png' %}">
   <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body class="login-page">
-  <div class="login-box">
-    <img src="{% static 'darklong.png' %}">
-    <h2>Welcome to Reach</h2>
-    <h3>The Asset Management Platform</h3>
-        {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+  {% if messages %}
+  <div class="toast-container">
+      {% for message in messages %}
+      <div class="toast-message {{ message.tags }}">
+          <div class="toast-content">
+              <span class="toast-icon">✓</span>
+              <span class="toast-text">{{ message }}</span>
+          </div>
+          <button type="button" class="toast-close">&times;</button>
+      </div>
+      {% endfor %}
+  </div>
+  {% endif %}
 
-    <form method="post">
-        {% csrf_token %}
-        <p>
-          <label for="username">Username:</label><br>
-          <input type="text" name="username" id="username" required>
-        </p>
-        <p>
-          <label for="password">Password:</label><br>
-          <input type="password" name="password" id="password" required>
-        </p>
-        <button type="submit">Login</button>
-      </form>
-      <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
-    <div class="footer">
-      Forgot your password? Contact your admin.
+  <div class="login-content">
+    <div class="login-box">
+      <img src="{% static 'darklong.png' %}" class="login-brand" alt="Reach logo">
+      <p class="login-kicker">Asset Booking Portal</p>
+      <h2>Sign In</h2>
+      <h3>Manage equipment and bookings in one place</h3>
+
+      <form method="post" class="login-form">
+          {% csrf_token %}
+          <p>
+            <label for="username">Username</label>
+            <input type="text" name="username" id="username" required>
+          </p>
+          <p>
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" required>
+          </p>
+          <button type="submit" class="login-submit">Login</button>
+        </form>
+        <p class="login-register">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+      <p class="login-help">Forgot your password? <a href="{% url 'password_reset' %}">Reset it here</a>.</p>
     </div>
   </div>
+  <footer>
+    <div class="app-footer-brand app-footer-brand-login">
+      <img src="{% static 'Atkinsrealis_flavicon_(4) (2).png' %}" alt="AtkinsRealis favicon" class="app-footer-icon">
+      <p>&copy; 2025 Reach. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const toasts = document.querySelectorAll(".toast-message");
+
+      toasts.forEach((toast) => {
+          const closeBtn = toast.querySelector(".toast-close");
+
+          const removeToast = () => {
+              toast.style.animation = "slideUp 0.45s ease forwards";
+              setTimeout(() => toast.remove(), 450);
+          };
+
+          if (closeBtn) {
+              closeBtn.addEventListener("click", removeToast);
+          }
+
+          setTimeout(removeToast, 3550);
+      });
+  });
+  </script>
 </body>
 </html>

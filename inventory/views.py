@@ -1,14 +1,14 @@
 from datetime import date, timedelta
+import uuid
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.forms import UserCreationForm
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import AssetForm, BookingForm, ContactForm
+from .forms import AssetForm, BookingForm, ContactForm, MultiAssetBookingForm, RegisterForm
 from .models import Asset, Booking, UserMessage
 
 
@@ -58,19 +58,21 @@ def logout_view(request):
 
 def register(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
+        form = RegisterForm(request.POST)
+        if form.is_valid(): 
             form.save()
             messages.success(request, "Account created. You can now log in.")
             return redirect("login")
     else:
-        form = UserCreationForm()
+        form = RegisterForm()
     return render(request, "inventory/register.html", {"form": form})
 
 
+@login_required(login_url="login")
 def home(request):
     assets = _annotate_next_available(Asset.objects.all())
     return render(request, "inventory/home.html", {"assets": assets})
+
 
 
 @login_required
@@ -81,29 +83,77 @@ def asset_list(request):
 
 @login_required
 def book_asset(request):
+    assets = _annotate_next_available(Asset.objects.all())
     if request.method == "POST":
-        form = BookingForm(request.POST)
+        form = MultiAssetBookingForm(request.POST)
         if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.save()
-            messages.success(request, "Asset booked successfully.")
+            selected_assets = form.cleaned_data["assets"]
+            start_date = form.cleaned_data["start_date"]
+            end_date = form.cleaned_data["end_date"]
+            purpose = form.cleaned_data["purpose"]
+            booking_group = str(uuid.uuid4())
+
+            for asset in selected_assets:
+                Booking.objects.create(
+                    user=request.user,
+                    asset=asset,
+                    booking_group=booking_group,
+                    start_date=start_date,
+                    end_date=end_date,
+                    purpose=purpose,
+                )
+
+            messages.success(request, f"Booked {selected_assets.count()} asset(s) successfully.")
             return redirect("asset_list")
     else:
-        form = BookingForm()
-    return render(request, "inventory/book_asset.html", {"form": form})
+        form = MultiAssetBookingForm()
 
+    selected_asset_ids = [str(asset_id) for asset_id in (form["assets"].value() or [])]
+    return render(
+        request,
+        "inventory/book_asset.html",
+        {"form": form, "assets": assets, "selected_asset_ids": selected_asset_ids},
+    )
 
 @login_required
 def booking_list(request):
-    bookings = Booking.objects.all()
+    view_filter = request.GET.get("view", "all")
+
+    bookings = Booking.objects.select_related("asset", "user").order_by("-start_date", "-end_date", "id")
+
+    if view_filter == "Your Bookings":
+        bookings = bookings.filter(user=request.user)
+
+    grouped = {}
+
+    for booking in bookings:
+        group_key = booking.booking_group or f"legacy-{booking.pk}"
+
+        if group_key not in grouped:
+            grouped[group_key] = {
+                "id": booking.id,
+                "assets": [booking.asset.name],
+                "start_date": booking.start_date,
+                "end_date": booking.end_date,
+                "user": booking.user,
+                "can_edit": booking.user_id == request.user.id or request.user.is_staff,
+            }
+        else:
+            grouped[group_key]["assets"].append(booking.asset.name)
+
+    grouped_bookings = []
+    for group in grouped.values():
+        group["asset_count"] = len(group["assets"])
+        group["assets_display"] = ", ".join(group["assets"])
+        grouped_bookings.append(group)
+
     return render(
         request,
         "inventory/booking_list.html",
         {
-            "bookings": bookings,
+            "grouped_bookings": grouped_bookings,
             "show_user": True,
-            "request_user": request.user,  # allows template to check user match
+            "view_filter": view_filter,
         },
     )
 
@@ -115,14 +165,53 @@ def edit_booking(request, pk):
     if booking.user != request.user and not request.user.is_staff:
         messages.error(request, "You are not allowed to edit this booking.")
         return redirect("booking_list")
+
+    group_bookings = None
+    if booking.booking_group:
+        group_bookings = Booking.objects.filter(booking_group=booking.booking_group)
+
     if request.method == "POST":
         form = BookingForm(request.POST, instance=booking)
+
+        if group_bookings:
+            # Grouped bookings keep their original assets; edit applies to dates/purpose.
+            form.fields["asset"].disabled = True
+
         if form.is_valid():
-            form.save()
-            messages.success(request, "Booking updated successfully.")
-            return redirect("booking_list")
+            if group_bookings:
+                start_date = form.cleaned_data["start_date"]
+                end_date = form.cleaned_data["end_date"]
+                purpose = form.cleaned_data["purpose"]
+                group_ids = list(group_bookings.values_list("id", flat=True))
+
+                for grouped_booking in group_bookings:
+                    overlapping = Booking.objects.filter(
+                        asset=grouped_booking.asset,
+                        start_date__lte=end_date,
+                        end_date__gte=start_date,
+                    ).exclude(pk__in=group_ids)
+
+                    if overlapping.exists():
+                        first = overlapping.first()
+                        form.add_error(
+                            None,
+                            f"{grouped_booking.asset.name} is already booked between {first.start_date} and {first.end_date}.",
+                        )
+
+                if not form.non_field_errors():
+                    group_bookings.update(start_date=start_date, end_date=end_date, purpose=purpose)
+                    messages.success(request, "Grouped booking updated successfully.")
+                    return redirect("booking_list")
+            else:
+                form.save()
+                messages.success(request, "Booking updated successfully.")
+                return redirect("booking_list")
     else:
         form = BookingForm(instance=booking)
+
+        if group_bookings:
+            form.fields["asset"].disabled = True
+
     return render(request, "inventory/edit_booking.html", {"form": form})
 
 

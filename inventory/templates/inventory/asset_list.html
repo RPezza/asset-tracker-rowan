@@ -1,55 +1,21 @@
+{% extends 'inventory/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Asset List</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-</head>
-<body>
-    <header>
-        <img src="{% static 'white.png' %}" alt="Logo">
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'asset_list' %}">Assets</a>
-            <a href="{% url 'booking_list' %}">Booking List</a>
-            <a href="{% url 'contact' %}">Contact</a>
-            <a href="{% url 'book_asset' %}">Book Asset</a>
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="logout-button">Logout</button>
-            </form>
-        </nav>
-    </header>
 
-    <main>
-        <h1>Asset Inventory</h1>
+{% block title %}Asset List{% endblock %}
+{% block page_title %}Asset Inventory{% endblock %}
 
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-
-        <div class="grid">
-            {% for asset in assets %}
-            <div class="card">
-                <img class="asset-img" src="{% static 'equipment/' %}{{ asset.name|slugify }}.jpg" alt="{{ asset.name }}">
-                <h2>{{ asset.name }}</h2>
-                <p>{{ asset.description }}</p>
-                <p>Next Available: {{ asset.next_available|date:"j M Y" }}</p>
-                <span class="badge {% if asset.available %}available{% else %}unavailable{% endif %}">
-                    {{ asset.available|yesno:"Available,Unavailable" }}
-                </span>
-            </div>
-            {% endfor %}
-        </div>
-    </main>
-
-    <footer>
-        &copy; 2025 Reach. All rights reserved
-    </footer>
-</body>
-</html>
+{% block content %}
+<div class="grid">
+    {% for asset in assets %}
+    <div class="card">
+        <img class="asset-img" src="{% static 'equipment/' %}{{ asset.name|slugify }}.jpg" alt="{{ asset.name }}">
+        <h2>{{ asset.name }}</h2>
+        <p>{{ asset.description }}</p>
+        <p>Next Available: {{ asset.next_available|date:"j M Y" }}</p>
+        <span class="badge {% if asset.available %}available{% else %}unavailable{% endif %}">
+            {{ asset.available|yesno:"Available,Unavailable" }}
+        </span>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

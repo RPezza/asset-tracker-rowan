@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Asset Tracker{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'Atkinsrealis_flavicon_(4) (2).png' %}">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav class="top-nav">
+            <div class="nav-logo">
+                <img src="{% static 'white.png' %}" alt="Reach logo">
+            </div>
+
+            <div class="nav-center">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'asset_list' %}">Assets</a>
+                <a href="{% url 'booking_list' %}">Booking List</a>
+                <a href="{% url 'contact' %}">Contact</a>
+                <a href="{% url 'book_asset' %}">Book Asset</a>
+            </div>
+
+            <form method="post" action="{% url 'logout' %}" class="nav-logout">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    {% if messages %}
+<div class="toast-container">
+    {% for message in messages %}
+    <div class="toast-message {{ message.tags }}">
+        <div class="toast-content">
+            <span class="toast-icon">✓</span>
+            <span class="toast-text">{{ message }}</span>
+        </div>
+        <button type="button" class="toast-close">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+    <main>
+        <div class="page-title-bar">
+            <span>{% block page_title %}Page{% endblock %}</span>
+        </div>
+
+        {% block heading %}
+        <h1>{% block heading_text %}{% endblock %}</h1>
+        {% endblock %}
+
+        {% block subheading %}{% endblock %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="app-footer-brand">
+            <img src="{% static 'Atkinsrealis_flavicon_(4) (2).png' %}" alt="AtkinsRealis favicon" class="app-footer-icon">
+            <p>&copy; 2025 Reach. All rights reserved.</p>
+        </div>
+    </footer>
+{% block scripts %}{% endblock %}
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toasts = document.querySelectorAll(".toast-message");
+
+        toasts.forEach((toast) => {
+            const closeBtn = toast.querySelector(".toast-close");
+
+            const removeToast = () => {
+                toast.style.animation = "toastOut 0.45s ease forwards";
+                setTimeout(() => toast.remove(), 450);
+            };
+
+            if (closeBtn) {
+                closeBtn.addEventListener("click", removeToast);
+            }
+
+            setTimeout(removeToast, 3550);
+        });
+    });
+    </script>
+</body>
+</html>

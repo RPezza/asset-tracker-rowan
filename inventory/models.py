@@ -12,6 +12,7 @@ class Asset(models.Model):
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    booking_group = models.CharField(max_length=36, blank=True, default="", db_index=True)
     start_date = models.DateField()
     end_date = models.DateField()
     purpose = models.TextField()
@@ -29,7 +30,7 @@ class UserMessage(models.Model):
     subject = models.CharField(max_length=200)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    email = models.EmailField()
+    email = models.EmailField() 
     name = models.CharField(max_length=100)
 
     def __str__(self):

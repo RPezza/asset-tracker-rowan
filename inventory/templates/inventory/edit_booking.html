@@ -1,46 +1,73 @@
+{% extends 'inventory/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Booking | Asset Tracker</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-</head>
-<body>
-    <header>
-        <img src="{% static 'white.png' %}">
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'asset_list' %}">Assets</a>
-            <a href="{% url 'booking_list' %}">Booking List</a>
-            <a href="{% url 'contact' %}">Contact</a>
-            <a href="{% url 'book_asset' %}">Book Asset</a>
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="logout-button">Logout</button>
-              </form>
-              
-        
-        </nav>
-    </header>
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    <main>
-        <h1>Edit Booking</h1>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="book-btn">Save Changes</button>
-        </form>
-    </main>
-    <footer>
-        <p>&copy; 2025 Reach. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+
+{% block title %}Edit Booking{% endblock %}
+{% block page_title %}Edit Booking{% endblock %}
+{% block heading_text %}Edit Booking{% endblock %}
+
+{% block subheading %}
+<h2>Update the booking details below. If this is a grouped booking, the equipment selection will stay locked and only the booking details can be changed.</h2>
+{% endblock %}
+
+{% block content %}
+<div class="book-asset-form-box">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="field-error" style="margin-bottom: 12px; text-align: left;">
+            {{ form.non_field_errors|join:', ' }}
+        </div>
+        {% endif %}
+
+        <p>
+            {{ form.asset.label_tag }}
+            {{ form.asset }}
+            {% if form.asset.errors %}
+                <span class="field-error">{{ form.asset.errors|join:', ' }}</span>
+            {% endif %}
+        </p>
+
+        <p>
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+            {% if form.start_date.errors %}
+                <span class="field-error">{{ form.start_date.errors|join:', ' }}</span>
+            {% endif %}
+        </p>
+
+        <p>
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+            {% if form.end_date.errors %}
+                <span class="field-error">{{ form.end_date.errors|join:', ' }}</span>
+            {% endif %}
+        </p>
+
+        <p>
+            {{ form.purpose.label_tag }}
+            {{ form.purpose }}
+            {% if form.purpose.errors %}
+                <span class="field-error">{{ form.purpose.errors|join:', ' }}</span>
+            {% endif %}
+        </p>
+
+        <button type="submit" class="book-btn">Save Changes</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach((input) => {
+            input.addEventListener('click', () => {
+                if (input.showPicker) {
+                    input.showPicker();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

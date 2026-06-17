@@ -1,22 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Asset Form</title>
-</head>
-<body>
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    <h1>{{ form.instance.pk|yesno:"Edit Asset,Add Asset" }}</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
-    <a href="{% url 'asset_list' %}">Back to assets</a>
-</body>
-</html>
+{% extends 'inventory/base.html' %}
+
+{% block title %}Asset Form{% endblock %}
+{% block page_title %}Asset Form{% endblock %}
+{% block heading_text %}{{ form.instance.pk|yesno:"Edit Asset,Add Asset" }}{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+<p><a href="{% url 'asset_list' %}" class="highlight-link">Back to assets</a></p>
+{% endblock %}

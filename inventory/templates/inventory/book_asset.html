@@ -1,56 +1,104 @@
+{% extends 'inventory/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Book Equipment</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-</head>
-<body>
-    <header>
-        <img src="{% static 'white.png' %}">
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'asset_list' %}">Assets</a>
-            <a href="{% url 'booking_list' %}">Booking List</a>
-            <a href="{% url 'contact' %}">Contact</a>
-            <a href="{% url 'book_asset' %}">Book Asset</a>
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="logout-button">Logout</button>
-              </form>
-              
-        
-        </nav>
-    </header>
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
 
-    <main>
-        <h1>Book Available Equipment</h1>
-        <h2>Here you can book equipment for use. You will be unable to book equipment that has already been booked for selected dates.</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Book</button>
-        </form>
-    </main>
+{% block title %}Book Equipment{% endblock %}
+{% block page_title %}Book Equipment{% endblock %}
+{% block heading_text %}Book Available Equipment{% endblock %}
 
-    <footer>
-        &copy; 2025 Reach. All rights reserved
-    </footer>
+{% block subheading %}
+<h2>Here you can book equipment for use. You will be unable to book equipment that has already been booked for selected dates.</h2>
+{% endblock %}
 
-    <script>
-        window.addEventListener('beforeunload', (event) => {
-            event.preventDefault();
-            event.returnValue = '';
+{% block content %}
+<div class="book-asset-form-box">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <ul class="messages">
+            {% for error in form.non_field_errors %}
+            <li class="error">{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="asset-picker">
+            <label>Select Equipment (you can choose multiple)</label>
+            {{ form.assets }}
+            <div class="asset-picker-grid" id="assetPickerGrid">
+                {% for asset in assets %}
+                <button
+                    type="button"
+                    class="asset-picker-card{% if asset.id|stringformat:'s' in selected_asset_ids %} selected{% endif %}"
+                    data-asset-id="{{ asset.id }}"
+                    aria-pressed="{% if asset.id|stringformat:'s' in selected_asset_ids %}true{% else %}false{% endif %}"
+                >
+                    <img src="{% static 'equipment/' %}{{ asset.name|slugify }}.jpg" alt="{{ asset.name }}">
+                    <span>{{ asset.name }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            {% if form.assets.errors %}
+            <div class="field-error">{{ form.assets.errors|join:', ' }}</div>
+            {% endif %}
+        </div>
+
+        <p>
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+            {% if form.start_date.errors %}<span class="field-error">{{ form.start_date.errors|join:', ' }}</span>{% endif %}
+        </p>
+        <p>
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+            {% if form.end_date.errors %}<span class="field-error">{{ form.end_date.errors|join:', ' }}</span>{% endif %}
+        </p>
+        <p>
+            {{ form.purpose.label_tag }}
+            {{ form.purpose }}
+            {% if form.purpose.errors %}<span class="field-error">{{ form.purpose.errors|join:', ' }}</span>{% endif %}
+        </p>
+
+        <button type="submit">Book</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const assetInput = document.getElementById('id_assets');
+        const cards = document.querySelectorAll('.asset-picker-card');
+
+        if (!assetInput || cards.length === 0) return;
+
+        assetInput.style.display = 'none';
+
+        function setOptionSelected(assetId, isSelected) {
+            for (const option of assetInput.options) {
+                if (option.value === assetId) {
+                    option.selected = isSelected;
+                    break;
+                }
+            }
+        }
+
+        cards.forEach((card) => {
+            card.addEventListener('click', () => {
+                const assetId = card.getAttribute('data-asset-id');
+                const isSelected = card.classList.toggle('selected');
+                card.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+                setOptionSelected(assetId, isSelected);
+            });
         });
-    </script>
-    
-</body>
-</html>
+
+        // Make date inputs open picker on any click
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach((input) => {
+            input.addEventListener('click', () => {
+                input.showPicker();
+            });
+        });
+    });
+</script>
+{% endblock %}

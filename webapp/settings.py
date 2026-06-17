@@ -78,6 +78,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "rowanperry05@gmail.com"
 EMAIL_HOST_PASSWORD = "akhm wnwa wcvu qydz"
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = "Reach Support Team <rowanperry05@gmail.com>"
 
 LOGIN_URL = "/login/"
