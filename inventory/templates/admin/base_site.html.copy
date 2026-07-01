@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Asset Tracker Admin{% endblock %}
+
+{% block extrastyle %}
+<style>
+    /* Force light mode and neutral backgrounds */
+    :root { color-scheme: light; }
+    @media (prefers-color-scheme: dark) { :root { color-scheme: light; } }
+
+    html, body {
+        background: #f7f7f7 !important;
+        color: #111 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Reduce/neutralise the banner */
+    #header, #branding, .top-nav, .nav-center, .nav-logo {
+        background: #fff !important;
+        color: #111 !important;
+    }
+    /* Hide large custom nav/banner to keep admin light and minimal */
+    .top-nav, .nav-center, .nav-logo { display: none !important; }
+
+    /* Keep site name simple and readable */
+    #branding { padding: 10px 18px; border-bottom: 1px solid #eee; }
+    /* Header/site title colour set to requested green */
+    #branding h1, #site-name { margin: 0; font-size: 18px; font-weight: 600; color: #05e560 !important; }
+    #branding h1 a, #site-name a { color: #05e560 !important; text-decoration: none; }
+
+    /* Hide theme/light-mode toggle controls (attribute selectors + common classes) */
+    button[title*="theme"], button[title*="Theme"], button[title*="dark"], button[title*="Dark"],
+    [aria-label*="theme"], [aria-label*="Theme"], [aria-label*="dark"], [aria-label*="Dark"],
+    .theme-toggle, .toggle-theme, .color-scheme-toggle, .admin-toggle-theme, .dark-mode-toggle,
+    .toggle-button, #dark-mode-toggle {
+        display: none !important;
+    }
+
+    /* Module / card appearance: subtle, light background */
+    .module {
+        background: rgba(255,255,255,0.95) !important;
+        border: 1px solid #e6e6e6 !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .module h2, .dashboard-module h2 {
+        background: #fafafa !important;
+        border-bottom: 1px solid #eee !important;
+        color: #111 !important;
+        padding: 12px 16px !important;
+        margin: 0 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Make the small 'Add' / action buttons grey or transparent as requested */
+    .addlink, .button, .submit-row input {
+        background: rgba(255,255,255,0.0) !important; /* transparent */
+        background-color: #efefef !important; /* or light grey for visibility */
+        color: #111 !important;
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        border-radius: 6px !important;
+        padding: 8px 12px !important;
+    }
+    .addlink[title], .addlink:hover, .button:hover, .submit-row input:hover { background-color: #e0e0e0 !important; }
+
+    /* Tables and text for improved readability */
+    .module table th { background: #fafafa !important; color: #111 !important; font-weight: 700 !important; }
+    .module table td { color: #111 !important; }
+
+    /* Forms */
+    form input, form select, form textarea { background: #fff !important; color: #111 !important; border: 1px solid #ddd !important; }
+
+    /* Ensure any dark-mode classes are neutralised */
+    .dark, .theme-dark, body.dark-mode { background: #f7f7f7 !important; color: #111 !important; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Asset Tracker Admin</a></h1>
+{% endblock %}

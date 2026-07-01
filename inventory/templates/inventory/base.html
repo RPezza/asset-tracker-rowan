@@ -35,7 +35,15 @@
     {% for message in messages %}
     <div class="toast-message {{ message.tags }}">
         <div class="toast-content">
-            <span class="toast-icon">✓</span>
+            <span class="toast-icon">
+                {% if 'error' in message.tags %}
+                    ✕
+                {% elif 'warning' in message.tags %}
+                    !
+                {% else %}
+                    ✓
+                {% endif %}
+            </span>
             <span class="toast-text">{{ message }}</span>
         </div>
         <button type="button" class="toast-close">&times;</button>

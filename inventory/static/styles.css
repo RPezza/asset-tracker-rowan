@@ -828,6 +828,12 @@ font-weight: normal;}
     margin-top: 6px;
 }
 
+.form-toast-message {
+    position: relative;
+    animation: none;
+    margin-bottom: 16px;
+}
+
 .toast-container {
     position: fixed !important;
     top: 20px !important;

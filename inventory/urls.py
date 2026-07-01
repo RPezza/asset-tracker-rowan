@@ -16,6 +16,7 @@ urlpatterns = [
     path("bookings/", views.booking_list, name="booking_list"),
     path("bookings/<int:pk>/edit/", views.edit_booking, name="edit_booking"),
     path("contact/", views.contact, name="contact"),
+    path("custom/", views.custom_page, name="custom_page"),
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(

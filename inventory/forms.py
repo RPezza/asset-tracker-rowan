@@ -5,7 +5,30 @@ from django.utils import timezone
 
 from .models import Asset, Booking, UserMessage
 
-class BookingForm(forms.ModelForm):
+
+class BookingDateValidationMixin:
+    """Reusable booking validation logic for single and multi-asset forms."""
+
+    @staticmethod
+    def _validate_dates(start_date, end_date):
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError("End date must be after start date.")
+        if start_date and start_date < timezone.now().date():
+            raise forms.ValidationError("Start date cannot be in the past.")
+
+    @staticmethod
+    def _get_overlaps(asset, start_date, end_date, exclude_pk=None):
+        overlaps = Booking.objects.filter(
+            asset=asset,
+            start_date__lte=end_date,
+            end_date__gte=start_date,
+        )
+        if exclude_pk:
+            overlaps = overlaps.exclude(pk=exclude_pk)
+        return overlaps
+
+
+class BookingForm(BookingDateValidationMixin, forms.ModelForm):
     class Meta:
         model = Booking
         fields = ["asset", "start_date", "end_date", "purpose"]
@@ -14,38 +37,28 @@ class BookingForm(forms.ModelForm):
             "end_date": forms.DateInput(attrs={"type": "date"}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["asset"].queryset = Asset.objects.all()
-
     def clean(self):
         cleaned_data = super().clean()
         asset = cleaned_data.get("asset")
-        start = cleaned_data.get("start_date")
-        end = cleaned_data.get("end_date")
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
 
-        if start and end and start > end:
-            raise forms.ValidationError("End date must be after start date.")
-        if start and start < timezone.now().date():
-            raise forms.ValidationError("Start date cannot be in the past.")
+        self._validate_dates(start_date, end_date)
 
-        if asset and start and end:
-            overlapping = Booking.objects.filter(
-                asset=asset,
-                start_date__lte=end,
-                end_date__gte=start,
+        if asset and start_date and end_date:
+            overlaps = self._get_overlaps(
+                asset, start_date, end_date, exclude_pk=self.instance.pk
             )
-            if self.instance.pk:
-                overlapping = overlapping.exclude(pk=self.instance.pk)
-            if overlapping.exists():
-                first = overlapping.first()
+            if overlaps.exists():
+                booked = overlaps.first()
                 raise forms.ValidationError(
-                    f"{asset.name} is already booked between {first.start_date} and {first.end_date}."
+                    f"{asset.name} is already booked between {booked.start_date} and {booked.end_date}."
                 )
+
         return cleaned_data
 
 
-class MultiAssetBookingForm(forms.Form):
+class MultiAssetBookingForm(BookingDateValidationMixin, forms.Form):
     assets = forms.ModelMultipleChoiceField(
         queryset=Asset.objects.none(),
         required=True,
@@ -62,28 +75,20 @@ class MultiAssetBookingForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         assets = cleaned_data.get("assets")
-        start = cleaned_data.get("start_date")
-        end = cleaned_data.get("end_date")
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
 
-        if start and end and start > end:
-            raise forms.ValidationError("End date must be after start date.")
-        if start and start < timezone.now().date():
-            raise forms.ValidationError("Start date cannot be in the past.")
+        self._validate_dates(start_date, end_date)
 
-        if assets and start and end:
+        if assets and start_date and end_date:
             conflicts = []
             for asset in assets:
-                overlapping = Booking.objects.filter(
-                    asset=asset,
-                    start_date__lte=end,
-                    end_date__gte=start,
-                )
-                if overlapping.exists():
-                    first = overlapping.first()
+                overlaps = self._get_overlaps(asset, start_date, end_date)
+                if overlaps.exists():
+                    booked = overlaps.first()
                     conflicts.append(
-                        f"{asset.name} is already booked between {first.start_date} and {first.end_date}."
+                        f"{asset.name} is already booked between {booked.start_date} and {booked.end_date}."
                     )
-
             if conflicts:
                 raise forms.ValidationError(conflicts)
 

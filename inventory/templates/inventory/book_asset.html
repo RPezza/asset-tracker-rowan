@@ -15,11 +15,14 @@
         {% csrf_token %}
 
         {% if form.non_field_errors %}
-        <ul class="messages">
-            {% for error in form.non_field_errors %}
-            <li class="error">{{ error }}</li>
-            {% endfor %}
-        </ul>
+        {% for error in form.non_field_errors %}
+        <div class="toast-message error form-toast-message">
+            <div class="toast-content">
+                <span class="toast-icon">!</span>
+                <span class="toast-text">{{ error }}</span>
+            </div>
+        </div>
+        {% endfor %}
         {% endif %}
 
         <div class="asset-picker">

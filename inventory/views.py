@@ -13,28 +13,53 @@ from .models import Asset, Booking, UserMessage
 
 
 def _annotate_next_available(assets):
+    today = date.today()
+
     for asset in assets:
-        # Check if today is included in a booking
+        # Determine whether the asset is booked today and when it becomes available.
         is_today_booked = Booking.objects.filter(
             asset=asset,
-            start_date__lte=date.today(),
-            end_date__gte=date.today()
+            start_date__lte=today,
+            end_date__gte=today,
         ).exists()
 
         if is_today_booked:
-            # Find the latest booking ending today or later
             latest_booking = Booking.objects.filter(
                 asset=asset,
-                end_date__gte=date.today()
+                end_date__gte=today,
             ).order_by("end_date").last()
-
             asset.next_available = latest_booking.end_date + timedelta(days=1)
-            asset.available = False  # Unavailable only if today is booked
+            asset.available = False
         else:
-            asset.next_available = date.today()
-            asset.available = True  # Available if today is not booked
+            asset.next_available = today
+            asset.available = True
     return assets
 
+
+def _group_bookings(bookings, user_id):
+    grouped = {}
+
+    for booking in bookings:
+        group_key = booking.booking_group or f"legacy-{booking.pk}"
+        if group_key not in grouped:
+            grouped[group_key] = {
+                "id": booking.id,
+                "assets": [booking.asset.name],
+                "start_date": booking.start_date,
+                "end_date": booking.end_date,
+                "user": booking.user,
+                "can_edit": booking.user_id == user_id or booking.user.is_staff,
+            }
+        else:
+            grouped[group_key]["assets"].append(booking.asset.name)
+
+    grouped_bookings = []
+    for group in grouped.values():
+        group["asset_count"] = len(group["assets"])
+        group["assets_display"] = ", ".join(group["assets"])
+        grouped_bookings.append(group)
+
+    return grouped_bookings
 
 
 def login_view(request):
@@ -118,34 +143,12 @@ def book_asset(request):
 @login_required
 def booking_list(request):
     view_filter = request.GET.get("view", "all")
-
     bookings = Booking.objects.select_related("asset", "user").order_by("-start_date", "-end_date", "id")
 
     if view_filter == "Your Bookings":
         bookings = bookings.filter(user=request.user)
 
-    grouped = {}
-
-    for booking in bookings:
-        group_key = booking.booking_group or f"legacy-{booking.pk}"
-
-        if group_key not in grouped:
-            grouped[group_key] = {
-                "id": booking.id,
-                "assets": [booking.asset.name],
-                "start_date": booking.start_date,
-                "end_date": booking.end_date,
-                "user": booking.user,
-                "can_edit": booking.user_id == request.user.id or request.user.is_staff,
-            }
-        else:
-            grouped[group_key]["assets"].append(booking.asset.name)
-
-    grouped_bookings = []
-    for group in grouped.values():
-        group["asset_count"] = len(group["assets"])
-        group["assets_display"] = ", ".join(group["assets"])
-        grouped_bookings.append(group)
+    grouped_bookings = _group_bookings(bookings, request.user.id)
 
     return render(
         request,
@@ -239,6 +242,10 @@ def contact(request):
     else:
         form = ContactForm()
     return render(request, "inventory/contact.html", {"form": form})
+
+
+def custom_page(request):
+    return render(request, "inventory/custom_page.html")
 
 
 def admin_required(user):

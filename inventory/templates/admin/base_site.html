@@ -1,68 +1,133 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}Asset Tracker{% endblock %}
+{% block title %}rEACH - aSSET tRACKER ADMIN{% endblock %}
 
 {% block extrastyle %}
-
 <style>
+    :root { color-scheme: light; }
+    @media (prefers-color-scheme: dark) { :root { color-scheme: light; } }
+
     html, body {
-        height: 100%;
+        background: #f7f7f7 !important;
+        color: #111 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         margin: 0;
         padding: 0;
-        font-family: 'Gamechanger', sans-serif;
-        background: linear-gradient(180deg, #192d38, #bedae5);
-        color: #ffffff;
     }
 
     #header {
-        background-color: transparent;
-        padding: 20px;
-        text-align: center;
+        background: #bdbdbd !important;
+        color: #05e560 !important;
+        border-bottom: 1px solid #d6d6d6 !important;
     }
 
-    #header h1 {
-        font-size: 40px;
-        font-weight: bold;
-        color: white;
+    #header h1, #site-name {
+        color: #05e560 !important;
     }
 
-    .module h2, .module caption, .inline-group h2 {
-        color: #ffffff;
+    #branding {
+        padding: 12px 18px !important;
+        margin: 0 !important;
+    }
+
+    .admin-branding {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .admin-logo {
+        display: inline-block;
+        width: 38px;
+        height: auto;
+        border-radius: 6px;
+        background: #fff;
+        padding: 4px;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+    }
+
+    .admin-title {
+        display: inline-flex;
+        flex-direction: column;
+        text-align: left;
+        color: #05e560 !important;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        line-height: 1.05;
+    }
+
+    .admin-title span {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #05e560 !important;
+    }
+
+    #user-tools a,
+    #user-tools button,
+    .user-tools a,
+    .user-tools button,
+    #header .module a,
+    #header .module button {
+        color: #05e560 !important;
+    }
+
+    #user-tools a:hover,
+    #user-tools button:hover,
+    .user-tools a:hover,
+    .user-tools button:hover {
+        color: #028a38 !important;
     }
 
     .module {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 15px;
+        background: rgba(255,255,255,0.95) !important;
+        border: 1px solid #e6e6e6 !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+        margin-bottom: 20px;
+        overflow: hidden;
     }
 
-    .button, input[type="submit"], input[type="button"], .submit-row input {
-        background-color: #5a7681;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 8px 16px;
-        font-weight: bold;
-        cursor: pointer;
+    .module h2, .dashboard-module h2 {
+        background: #fafafa !important;
+        border-bottom: 1px solid #eee !important;
+        color: #111 !important;
+        padding: 12px 16px !important;
+        margin: 0 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
     }
 
-    .button:hover, input[type="submit"]:hover, input[type="button"]:hover {
-        background-color: #3e5a63;
+    .addlink, .button, .submit-row input {
+        background: #efefef !important;
+        color: #111 !important;
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        border-radius: 6px !important;
+        padding: 8px 12px !important;
     }
 
-    .breadcrumbs {
-        background: none;
-        color: white;
+    .addlink:hover, .button:hover, .submit-row input:hover {
+        background-color: #e0e0e0 !important;
     }
 
-    .breadcrumbs a {
-        color: #ffffff;
-        text-decoration: underline;
-    }
+    .module table th { background: #fafafa !important; color: #111 !important; font-weight: 700 !important; }
+    .module table td { color: #111 !important; }
+
+    form input, form select, form textarea { background: #fff !important; color: #111 !important; border: 1px solid #ddd !important; }
+
+    .dark, .theme-dark, body.dark-mode { background: #f7f7f7 !important; color: #111 !important; }
 </style>
 {% endblock %}
 
 {% block branding %}
-<h1>Asset Tracker Admin</h1>
+<div class="admin-branding">
+    <img src="{% static 'darklogo.png' %}" alt="AtkinsRéalis logo" class="admin-logo" />
+    <div class="admin-title">
+        <span>REACH</span>
+        Asset Tracker Admin
+    </div>
+</div>
 {% endblock %}
+

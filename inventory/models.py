@@ -22,6 +22,7 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        # Mark the asset unavailable after a booking is saved.
         self.asset.available = False
         self.asset.save()
 
