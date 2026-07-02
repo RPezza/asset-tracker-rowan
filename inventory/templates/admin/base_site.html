@@ -5,25 +5,38 @@
 
 {% block extrastyle %}
 <style>
-    :root { color-scheme: light; }
+    :root {
+        color-scheme: Dark;
+        --header-bg: #ffffff;
+        --header-color: #111111;
+        --header-link-color: #111111;
+        --header-branding-color: #324e5e;
+        --body-bg: #f7f7f7;
+        --body-fg: #111111;
+        --body-quiet-color: #666666;
+        --selected-bg: transparent;
+        --selected-row: transparent;
+        --darkened-bg: #f7f7f7;
+        --accent: #324e5e;
+    }
     @media (prefers-color-scheme: dark) { :root { color-scheme: light; } }
 
     html, body {
-        background: #f7f7f7 !important;
-        color: #111 !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background: var(--body-bg) !important;
+        color: var(--body-fg) !important;
+        font-family: 'Gamechanger-regular', 'Gamechanger', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
         margin: 0;
         padding: 0;
     }
 
     #header {
-        background: #d4d4d4 !important;
-        color: #192d38 !important;
-        border-bottom: 1px solid #d6d6d6 !important;
+        background: #e2e2e2 !important;
+        color: #111 !important;
+        border-bottom: 1px solid #dcdcdc !important;
     }
 
     #header h1, #site-name {
-        color: #192d38 !important;
+        color: #111 !important;
     }
 
     #branding {
@@ -112,6 +125,22 @@
 
     .module table th { background: #fafafa !important; color: #111 !important; font-weight: 700 !important; }
     .module table td { color: #111 !important; }
+
+    tbody tr.selected,
+    tbody tr.selected td,
+    tbody tr.selected th,
+    .selected,
+    .selected td,
+    .selected th,
+    .app-list li.selected,
+    .app-list li.selected a,
+    .app-list li.selected td,
+    .app-list li.selected th,
+    #content-main .selected,
+    #content-main .selected td {
+        background-color: transparent !important;
+        color: inherit !important;
+    }
 
     form input, form select, form textarea { background: #fff !important; color: #111 !important; border: 1px solid #ddd !important; }
 

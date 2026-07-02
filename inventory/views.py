@@ -110,7 +110,14 @@ def asset_list(request):
 def book_asset(request):
     assets = _annotate_next_available(Asset.objects.all())
     if request.method == "POST":
-        form = MultiAssetBookingForm(request.POST)
+        # Normalize legacy single-asset POSTs that use 'asset' into 'assets' expected by the
+        # `MultiAssetBookingForm` so both single and multi-asset submissions validate.
+        post_data = request.POST.copy()
+        if "assets" not in post_data and "asset" in post_data:
+            # Ensure assets is a list-like field for the form
+            post_data.setlist("assets", [post_data.get("asset")])
+
+        form = MultiAssetBookingForm(post_data)
         if form.is_valid():
             selected_assets = form.cleaned_data["assets"]
             start_date = form.cleaned_data["start_date"]
@@ -216,6 +223,30 @@ def edit_booking(request, pk):
             form.fields["asset"].disabled = True
 
     return render(request, "inventory/edit_booking.html", {"form": form})
+
+
+@login_required
+def delete_booking(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
+    if booking.user != request.user and not request.user.is_staff:
+        messages.error(request, "You are not allowed to delete this booking.")
+        return redirect("booking_list")
+
+    if request.method == "POST":
+        group_bookings = None
+        if booking.booking_group:
+            group_bookings = Booking.objects.filter(booking_group=booking.booking_group)
+        
+        if group_bookings:
+            count = group_bookings.count()
+            group_bookings.delete()
+            messages.success(request, f"Grouped booking with {count} asset(s) deleted successfully.")
+        else:
+            booking.delete()
+            messages.success(request, "Booking deleted successfully.")
+        return redirect("booking_list")
+    
+    return render(request, "inventory/booking_confirm_delete.html", {"booking": booking})
 
 
 @login_required

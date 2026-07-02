@@ -10,7 +10,7 @@
 
 {% block content %}
 <form method="get" style="margin-bottom: 10px;">
-    <select name="view" onchange="this.form.submit()">
+    <select name="view" onchange="this.form.submit();">
         <option value="all" {% if view_filter == "all" %}selected{% endif %}>All</option>
         <option value="Your Bookings" {% if view_filter == "Your Bookings" %}selected{% endif %}>Your Bookings</option>
     </select>
@@ -24,22 +24,138 @@
         {% if show_user %}
         <th>User</th>
         {% endif %}
-        <th></th>
+        <th style="width: 100px; text-align: center;"></th>
     </tr>
     {% for booking in grouped_bookings %}
-    <tr>
+    <tr class="booking-row">
         <td>{{ booking.assets_display }}</td>
         <td>{{ booking.start_date }}</td>
         <td>{{ booking.end_date }}</td>
         {% if show_user %}
         <td>{{ booking.user }}</td>
         {% endif %}
-        <td>
+        <td style="width: 100px; text-align: center;">
             {% if booking.can_edit %}
-                <a href="{% url 'edit_booking' booking.id %}" class="edit-btn"class="muted">Edit</span>
+                <a href="{% url 'edit_booking' booking.id %}" style="background: none; border: none; color: #05e560; cursor: pointer; font-size: 16px; padding: 4px 6px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;" title="Edit booking">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </a>
+                <button
+                    type="button"
+                    class="delete-btn"
+                    data-booking-id="{{ booking.id }}"
+                    data-assets="{{ booking.assets_display|escape }}"
+                    data-start-date="{{ booking.start_date|escape }}"
+                    data-end-date="{{ booking.end_date|escape }}"
+                    style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 16px; padding: 4px 6px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-left: 4px;"
+                    title="Delete booking">                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                </button>
             {% endif %}
         </td>
     </tr>
     {% endfor %}
 </table>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; border-radius: 8px; width: 80%; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h5 style="margin: 0; color: #dc3545;">Delete Booking</h5>
+            <button type="button" onclick="closeDeleteModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+        </div>
+        <p style="margin: 10px 0; color: #333;"><strong>Assets:</strong> <span id="modalAssets"></span></p>
+        <p style="margin: 10px 0; color: #333;"><strong>Start:</strong> <span id="modalStartDate"></span></p>
+        <p style="margin: 10px 0; color: #333;"><strong>End:</strong> <span id="modalEndDate"></span></p>
+        <p style="margin: 15px 0; color: #666; font-size: 14px;">Are you sure you want to delete this booking? This action cannot be undone.</p>
+        <div style="text-align: right; margin-top: 20px;">
+            <button type="button" onclick="closeDeleteModal()" style="background-color: #6c757d; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">Cancel</button>
+            <button type="button" onclick="confirmDelete()" style="background-color: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let deleteBookingId = null;
+
+function openDeleteModal(bookingId, assets, startDate, endDate) {
+    deleteBookingId = bookingId;
+    document.getElementById('modalAssets').textContent = assets;
+    document.getElementById('modalStartDate').textContent = startDate;
+    document.getElementById('modalEndDate').textContent = endDate;
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    deleteBookingId = null;
+}
+
+function confirmDelete() {
+    if (deleteBookingId) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "delete_booking" 0 %}'.replace('0', deleteBookingId);
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            form.appendChild(csrfToken.cloneNode(true));
+        } else {
+            // Fallback: get CSRF token from cookie if not in DOM
+            const token = getCookie('csrftoken');
+            if (token) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrfmiddlewaretoken';
+                input.value = token;
+                form.appendChild(input);
+            }
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Close modal if user clicks outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        closeDeleteModal();
+    }
+}
+document.querySelectorAll('.delete-btn').forEach((button) => {
+    button.addEventListener('click', function () {
+        openDeleteModal(
+            this.dataset.bookingId,
+            this.dataset.assets,
+            this.dataset.startDate,
+            this.dataset.endDate
+        );
+    });
+});
+</script>
+
 {% endblock %}

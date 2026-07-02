@@ -93,6 +93,31 @@
             setTimeout(removeToast, 3550);
         });
     });
+
+    // Confirm before leaving the site (only for actual site closure, not internal navigation)
+    let isInternalNavigation = false;
+
+    // Mark internal links and form submissions
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        const form = e.target.closest('form');
+        
+        if (link && link.hostname === window.location.hostname) {
+            isInternalNavigation = true;
+        }
+        if (form && form.action && new URL(form.action, window.location.href).hostname === window.location.hostname) {
+            isInternalNavigation = true;
+        }
+    });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (!isInternalNavigation) {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+        isInternalNavigation = false; // Reset for next navigation
+    });
     </script>
 </body>
 </html>
